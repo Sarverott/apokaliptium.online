@@ -1,0 +1,27 @@
+{
+  "name": "www.apokaliptium.online",
+  "version": "1.0.0",
+  "description": "homepage of apokaliptium",
+  "keywords": [
+    "apokaliptium"
+  ],
+  "homepage": "https://github.com/Sarverott/apokaliptium.online#readme",
+  "bugs": {
+    "url": "https://github.com/Sarverott/apokaliptium.online/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sarverott/apokaliptium.online.git"
+  },
+  "license": "CC-BY-NC-ND-4.0",
+  "author": "Sett Sarverott",
+  "type": "module",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "task"
+  },
+  "dependencies": {
+   
+  },
+  "devDependencies": {}
+}
