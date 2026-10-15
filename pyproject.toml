@@ -1,15 +1,13 @@
 [project]
 name = "www.apokaliptium.online"
 version = "0.1.0"
-description = "Add your description here"
+description = "Media deployment tools for apokaliptium.online"
 readme = "README.md"
 authors = [
     { name = "Sett Sarverott", email = "sett@sarverott.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = ["boto3>=1.40,<2", "huggingface-hub>=1.7.2,<3"]
 
-
-[build-system]
-requires = ["uv_build>=0.12.20,<0.13.0"]
-build-backend = "uv_build"
+[tool.uv]
+package = false

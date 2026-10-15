@@ -2,9 +2,43 @@
 
 version: '3'
 
+vars:
+  GITRECON_BIN: gitrecon
+
 tasks:
   default:
-    desc: draft initialized
+    desc: List the available project procedures.
     cmds:
-      - git status
-    silent: true
+      - task --list
+
+  check:
+    desc: Check JavaScript and Python syntax and parse configuration.
+    cmds:
+      - npm run check
+      - python3 -c 'import ast, pathlib; [ast.parse(path.read_text(), filename=str(path)) for path in pathlib.Path("scripts").glob("*.py")]'
+      - python3 -c 'import json, pathlib, tomllib; json.loads(pathlib.Path("package.json").read_text()); json.loads(pathlib.Path("scripts/media.json").read_text()); tomllib.loads(pathlib.Path("pyproject.toml").read_text())'
+
+  serve:
+    desc: Serve the existing static site on localhost:8000.
+    cmds:
+      - python3 -m http.server 8000 --bind 127.0.0.1
+
+  media:plan:
+    desc: Validate local media and print the upload plan without network access.
+    cmds:
+      - python3 scripts/media.py plan
+
+  media:upload:
+    desc: Upload media and verify public downloads; requires local write credentials.
+    cmds:
+      - uv run python scripts/media.py upload
+
+  media:verify:
+    desc: Verify anonymous public downloads against the media manifest.
+    cmds:
+      - python3 scripts/media.py verify
+
+  recon:
+    desc: Inspect the repository with gitrecon without saving to its datasets.
+    cmds:
+      - '"{{.GITRECON_BIN}}" analyze . --no-save --json'

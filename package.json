@@ -1,5 +1,6 @@
 {
   "name": "www.apokaliptium.online",
+  "private": true,
   "version": "1.0.0",
   "description": "homepage of apokaliptium",
   "keywords": [
@@ -16,12 +17,8 @@
   "license": "CC-BY-NC-ND-4.0",
   "author": "Sett Sarverott",
   "type": "module",
-  "main": "src/main.js",
   "scripts": {
-    "test": "task"
-  },
-  "dependencies": {
-   
-  },
-  "devDependencies": {}
+    "check": "node --check app.js && node --check scripts/hf-read.mjs",
+    "test": "task check"
+  }
 }

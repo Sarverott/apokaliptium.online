@@ -1,43 +1,52 @@
-# fragment of shell history related with presettings stuff
+# Media procedures
+
+Destination: https://huggingface.co/buckets/Sarverott/mediacontainer
+
+The original images stay in `assets/` until upload and public verification are
+complete. `media.json` lists sizes, SHA-256 hashes and destination keys.
+Keys include the full content hash under `apokaliptium.online/` so different
+versions cannot overwrite each other. These procedures never delete files.
+
+## Inspect
 
 ```sh
-1752  cd ../apokaliptium-raw/apokaliptium/
- 1753  ls
- 1754  ls -al
- 1755  git init
- 1756  git add app.js index.html README.txt style.css 
- 1757  echo "*.[webp,png]" > assets/.gitignore # to not upload media files into github repo and instead of that include them at deployment from dedicated carrier like S3 driver
- 1758  history
- 1759  history | tail 7
- 1760  history | tail --help
- 1761  history | tail -n 7
- 1762  history | tail -n 11
- 1763  mkdir scripts
- 1764  echo "# fragment of shell history related with presettings stuff" > scripts/README.md 
- 1765  task --init
- 1766  nano Taskfile.yml 
- 1767  history | tail -n 11
- 1768  history | tail -n 15
- 1769  echo "```sh" >> scripts/README.md 
-
- 1770  echo "/`/`/`sh" >> scripts/README.md 
-
- 1771  git commit
- 1772  git add assets/
- 1773  git commit
- 1774  git add assets/
- 1775  git commit
- 1776  mv assets/.gitignore ../
- 1777  mv ../.gitignore ./
- 1778  echo "assets/*.webp" > .gitignore 
- 1779  git add .
- 1780  git status
- 1781  git commit
- 1782  git remote add origin https://github.com/apokaliptium/apokaliptium.online.git
- 1783  git push -u
- 1784  git push --set-upstream origin master
- 1785  history | tail -n 11
- 1786  history | tail -n 20
- 1787  history 
-
+task media:plan
 ```
+
+This validates every original and prints the plan without network access.
+If an image changes, update its size, SHA-256 and content-addressed key in the
+manifest before uploading.
+
+## Upload
+
+Install the Python tooling with `uv sync`. Configure write access locally using
+`hf auth login` or `HF_TOKEN`; alternatively configure Hugging Face S3 credentials
+through the usual AWS environment variables or profile. An HF token and an S3
+access key are different credentials. Do not put either in this repository or
+browser code. `uv run hf auth login` uses the project's installed HF CLI.
+
+```sh
+task media:upload
+```
+
+The script preflights local files, uploads through the HF API when an HF token
+is available, otherwise uses the S3 gateway, then downloads every public object
+anonymously and compares its size and SHA-256 with the manifest. Partial uploads
+can be retried; success is reported only after all public downloads verify.
+
+## Read without credentials
+
+```sh
+task media:verify
+node scripts/hf-read.mjs <object-key>
+```
+
+The JavaScript reader replaces `src/hf-mount.js` and writes object bytes to
+stdout. Public HTTP reads need no AWS SDK or credentials. A public bucket does
+not grant upload access; missing objects return an error until uploaded.
+
+After verification, update every site image URL and the future timeline's CSS
+background URL before deleting `assets/`. Astro migration remains postponed.
+
+References: [HF bucket uploads](https://huggingface.co/docs/huggingface_hub/guides/buckets)
+and [S3 configuration](https://huggingface.co/docs/hub/storage-buckets-s3).
