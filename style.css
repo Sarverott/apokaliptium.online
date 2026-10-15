@@ -667,3 +667,6 @@ footer a {
 		padding-right: 8%;
 	}
 }
+/* 
+// NOTE: too long file, store these stuff in src/assets/ and split that one into one that imports other named by section - where it can be just delegated to for example batched vue files with own css there you throw these parts of code. 
+*/

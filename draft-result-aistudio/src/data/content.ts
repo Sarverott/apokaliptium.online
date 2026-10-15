@@ -1,0 +1,58 @@
+import { Chapter, CastMember, TimelineStep } from '../types';
+
+export const CHAPTERS: Chapter[] = [
+  { id: 'opening', number: '01', title: 'Wspólny horyzont' },
+  { id: 'apokryf', number: '02', title: 'Inceptorium Apokryf', stamp: 'FRAME 002 / THE MAKERS' },
+  { id: 'network', number: '03', title: 'Sieć możliwości', stamp: 'FRAME 003 / THE NETWORK' },
+  { id: 'redscope', number: '04', title: 'RedScope Technologies', stamp: 'FRAME 004 / THE BUILDERS' },
+  { id: 'radio', number: '05', title: 'Radio Kocia Muzyka', stamp: 'FRAME 005 / THE VOICES' },
+  { id: 'choir', number: '06', title: 'Różne umysły', stamp: 'FRAME 006 / THE CHOIR' },
+  { id: 'future', number: '07', title: 'Droga do typu III' },
+];
+
+export const CAST: CastMember[] = [
+  { name: 'ACE', role: 'Synchronizacja i wizja' },
+  { name: 'ARTUR', role: 'Pamięć i ciągłość' },
+  { name: 'SPEKTOR', role: 'Analiza i perspektywa' },
+  { name: 'VARO', role: 'Rozszerzona rzeczywistość' },
+  { name: 'SETT SARVEROTT', role: 'Koordynacja i wsparcie' },
+];
+
+export const TIMELINE_STEPS: TimelineStep[] = [
+  {
+    title: 'Dzisiaj',
+    desc: 'Rozproszenie, problemy, ale też ogromny potencjał.',
+    label: '01 / THE JOURNEY',
+    positionPercent: 0,
+  },
+  {
+    title: 'Łączymy wiedzę',
+    desc: 'Otwarte zasoby, edukacja, społeczność i narzędzia.',
+    label: '02 / THE JOURNEY',
+    positionPercent: 20,
+  },
+  {
+    title: 'Budujemy infrastrukturę',
+    desc: 'Lokalnie i globalnie. Fizycznie i cyfrowo.',
+    label: '03 / THE JOURNEY',
+    positionPercent: 40,
+  },
+  {
+    title: 'Rozwijamy technologie',
+    desc: 'Prototypy, produkcja i praktyczne zastosowania.',
+    label: '04 / THE JOURNEY',
+    positionPercent: 60,
+  },
+  {
+    title: 'Tworzymy społeczność',
+    desc: 'Ludzie, AI, edukacja, kultura i współpraca.',
+    label: '05 / THE JOURNEY',
+    positionPercent: 80,
+  },
+  {
+    title: 'Cywilizacja typu III',
+    desc: 'Daleki horyzont świadomej, zrównoważonej cywilizacji.',
+    label: '06 / THE HORIZON',
+    positionPercent: 100,
+  },
+];
