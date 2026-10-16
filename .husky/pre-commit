@@ -1,0 +1,4 @@
+# Procedures live in Taskfile.yml; the hook only calls them.
+task check
+task lint:staged
+task test

@@ -33,6 +33,16 @@ tasks:
     cmds:
       - npm run lint
 
+  lint:staged:
+    desc: Biome on staged files only, used by the husky pre-commit hook.
+    cmds:
+      - npx biome check --staged --no-errors-on-unmatched
+
+  audit:
+    desc: Report known vulnerabilities in installed npm packages.
+    cmds:
+      - npm run audit
+
   inspect:
     desc: Crawl a running page with Crawlee and Playwright (default the dev server).
     cmds:
