@@ -23,7 +23,9 @@
     "preview": "vite preview",
     "check": "node --check src/app.js && node --check scripts/hf-read.mjs && node --check scripts/inspect.mjs",
     "lint": "biome check",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepare": "husky",
+    "audit": "npm audit --omit=optional"
   },
   "dependencies": {
     "@xterm/xterm": "^6.0.0",
