@@ -1,13 +1,13 @@
 // Crawl pages with a headless browser and print what each one shows:
 // title, failed requests and console errors. Follows same-site links.
 // Usage: node scripts/inspect.mjs [url] [maxPages]
-// Default url is the Vite dev server (`task dev`). Nothing is stored on disk.
+// Default url is the Astro dev server (`task dev`). Nothing is stored on disk.
 
 import { Configuration, log, PlaywrightCrawler } from "crawlee";
 
 log.setLevel(log.LEVELS.WARNING);
 
-const start = process.argv[2] ?? "http://127.0.0.1:5173/";
+const start = process.argv[2] ?? "http://localhost:4321/";
 const maxRequestsPerCrawl = Number(process.argv[3] ?? 10);
 const report = [];
 

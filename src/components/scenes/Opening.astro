@@ -1,0 +1,73 @@
+---
+import Scene from "../Scene.astro";
+
+const { chapter } = Astro.props;
+---
+
+<Scene
+	chapter={chapter}
+	variant="opening"
+	image="assets/hero.webp"
+	alt="Technomanta z kotem obserwuje świt nad Ziemią i infrastrukturę orbitalną"
+>
+	<div class="glow" slot="visual"></div>
+	<p class="eyebrow">01 — OTWARTA PLATFORMA DLA WSPÓLNEJ PRZYSZŁOŚCI</p>
+	<h1>Ten sam wszechświat.<br /><em>Wspólna przyszłość.</em></h1>
+	<p class="intro">
+		Technologia. Wiedza. Ludzie.<br />Z chaosu do twórczej ewolucji.
+	</p>
+	<a class="text-link" href="#apokryf">Rozpocznij podróż <span>↓</span></a>
+	<div class="bottomline" slot="after">
+		<span>INCEPTORIUM APOKRYF × APOKALIPTIUM</span><span
+			>PRZEWIJAJ, ABY ODKRYWAĆ ↓</span
+		>
+	</div>
+</Scene>
+
+<style>
+	.glow {
+		position: absolute;
+		width: 25vw;
+		height: 25vw;
+		background: #ffb84e33;
+		filter: blur(60px);
+		top: 20%;
+		left: 55%;
+		animation: breathe 6s infinite alternate;
+	}
+
+	.intro {
+		font-size: 16px !important;
+	}
+
+	.bottomline {
+		font-family: "Space Grotesk", sans-serif;
+		position: absolute;
+		bottom: 26px;
+		left: 9%;
+		right: 5%;
+		display: flex;
+		justify-content: space-between;
+		font-size: 8px;
+		letter-spacing: 0.2em;
+		color: #a7adb3;
+	}
+
+	@keyframes breathe {
+		to {
+			opacity: 0.35;
+			transform: scale(1.25);
+		}
+	}
+
+	@media (max-width: 800px) {
+		.bottomline {
+			font-size: 7px;
+			gap: 25px;
+			left: 8%;
+		}
+		.bottomline span:first-child {
+			max-width: 140px;
+		}
+	}
+</style>

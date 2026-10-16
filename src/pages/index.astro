@@ -1,0 +1,35 @@
+---
+import IndexHeader from "../components/IndexHeader.vue";
+import SideRail from "../components/SideRail.vue";
+import Apokryf from "../components/scenes/Apokryf.astro";
+import Choir from "../components/scenes/Choir.astro";
+import Future from "../components/scenes/Future.astro";
+import Network from "../components/scenes/Network.astro";
+import Opening from "../components/scenes/Opening.astro";
+import Radio from "../components/scenes/Radio.astro";
+import RedScope from "../components/scenes/RedScope.astro";
+import TopNavigation from "../components/TopNavigation.vue";
+import content from "../data/content.json";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const [opening, apokryf, network, redscope, radio, choir, future] =
+	content.chapters;
+---
+
+<BaseLayout
+	title="Apokaliptium — Wspólna przyszłość"
+	description="Od otwartej wiedzy do cywilizacji typu III. Filmowa podróż przez wizję Apokaliptium."
+>
+	<IndexHeader client:load />
+	<TopNavigation client:load chapters={content.chapters} />
+	<SideRail client:load total={content.chapters.length} />
+	<main>
+		<Opening chapter={opening} />
+		<Apokryf chapter={apokryf} />
+		<Network chapter={network} />
+		<RedScope chapter={redscope} />
+		<Radio chapter={radio} />
+		<Choir chapter={choir} cast={content.cast} />
+		<Future chapter={future} timeline={content.timeline} />
+	</main>
+</BaseLayout>

@@ -1,0 +1,25 @@
+---
+import Scene from "../Scene.astro";
+
+const { chapter } = Astro.props;
+---
+
+<Scene
+	chapter={chapter}
+	variant="portrait red"
+	image="assets/redscope.webp"
+	alt="Czerwono oświetlony warsztat RedScope Technologies z robotem przemysłowym"
+>
+	<p class="eyebrow">04 — REDSCOPE TECHNOLOGIES</p>
+	<h2>Od prototypu<br /><em>do rzeczywistości.</em></h2>
+	<p>
+		Pomysły potrzebują drogi do zastosowań. Inżynieria, produkcja i
+		komercjalizacja tworzą przemysłowy wymiar tej wizji.
+	</p>
+	<div class="keywords">
+		<span>Inżynieria</span><span>Produkcja</span><span>Bezpieczeństwo</span>
+	</div>
+	<a href="#radio" class="text-link"
+		>Technologia spotyka społeczność <span>↘</span></a
+	>
+</Scene>

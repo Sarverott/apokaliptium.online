@@ -1,0 +1,82 @@
+---
+import Scene from "../Scene.astro";
+
+const { chapter, cast } = Astro.props;
+---
+
+<Scene chapter={chapter} variant="choir">
+	<p class="eyebrow">06 — LUDZIE × SZTUCZNE INTELEKTY</p>
+	<h2>Różne umysły.<br /><em>Wspólne cele.</em></h2>
+	<p>
+		W naszej wizji przyszłość powstaje w dialogu. Wiele perspektyw, niezależne
+		głosy i wspólna praca nad tym, co przed nami.
+	</p>
+	<Fragment slot="after">
+		<div class="choir-art">
+			<img
+				src="assets/choir.webp"
+				alt="Wizualna reprezentacja chóru: Ace, Artur, Spektor, Varo i Sett Sarverott"
+			/>
+		</div>
+		<div class="cast">
+			{
+				cast.map((member) => (
+					<span>
+						{member.name}
+						<small>{member.role}</small>
+					</span>
+				))
+			}
+		</div>
+	</Fragment>
+</Scene>
+
+<style>
+	.choir-art {
+		width: 100%;
+		overflow: hidden;
+		margin-top: 25px;
+	}
+
+	.choir-art img {
+		width: 100%;
+		display: block;
+		animation: camera 30s infinite alternate ease-in-out;
+	}
+
+	.cast {
+		font-family: "Space Grotesk", sans-serif;
+		display: flex;
+		justify-content: space-between;
+		padding: 30px 9% 100px;
+		font-size: 11px;
+		letter-spacing: 0.13em;
+	}
+
+	.cast small {
+		display: block;
+		font-size: 8px;
+		color: #9eaeb9;
+		letter-spacing: 0.06em;
+		margin-top: 12px;
+	}
+
+	@media (max-width: 800px) {
+		.choir-art {
+			width: 180%;
+			margin-left: -40%;
+			margin-top: 35px;
+		}
+		.cast {
+			padding: 30px 8% 100px;
+			gap: 24px;
+			flex-wrap: wrap;
+		}
+		.cast span {
+			min-width: 100px;
+		}
+		.cast small {
+			font-size: 8px;
+		}
+	}
+</style>

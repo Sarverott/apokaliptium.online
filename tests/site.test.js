@@ -1,35 +1,85 @@
-import { mkdtemp, readFile, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { spawn } from "node:child_process";
+import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { createServer } from "node:net";
 import { join } from "node:path";
+import { build, preview } from "astro";
 import { chromium } from "playwright";
-import { build, createServer, preview } from "vite";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 
-// Browser checks of the page in src/: once on the Vite dev server, once on
-// the production build served by `vite preview`. The build goes to a
-// temporary directory so dist/ stays untouched.
+// Browser checks of the site: once on the Astro dev server, once on the
+// production build served by `astro preview`. The build goes to a temporary
+// directory under test-results/ (gitignored), so dist/ stays untouched; it
+// must sit on the same filesystem, because Astro moves files by renaming.
 
-const config = { configFile: "vite.config.js", logLevel: "silent" };
+const config = { logLevel: "silent", server: { port: 0 } };
+
+function freePort() {
+	return new Promise((resolve) => {
+		const probe = createServer().listen(0, "127.0.0.1", () => {
+			const { port } = probe.address();
+			probe.close(() => resolve(port));
+		});
+	});
+}
+
+function devServerScript(port) {
+	return `
+		import { dev } from "astro";
+		const server = await dev({
+			logLevel: "silent",
+			server: { port: ${port}, host: "127.0.0.1" },
+		});
+		process.on("SIGTERM", async () => {
+			await server.stop();
+			process.exit(0);
+		});
+	`;
+}
+
+async function waitFor(url) {
+	for (let attempt = 0; attempt < 100; attempt++) {
+		try {
+			if ((await fetch(url)).ok) return;
+		} catch {}
+		await new Promise((resolve) => setTimeout(resolve, 200));
+	}
+	throw new Error(`${url} did not answer`);
+}
 
 const servers = {
 	dev: async () => {
-		const server = await createServer({ ...config, server: { port: 0 } });
-		await server.listen();
-		return { url: server.resolvedUrls.local[0], close: () => server.close() };
+		// The dev server runs in a child process: under Vitest (VITEST=true)
+		// Astro renders pages without client islands. The programmatic API is
+		// used because the `astro dev` CLI detaches into a background daemon
+		// when it has no terminal, and outlives the test.
+		const port = await freePort();
+		const { VITEST, ...env } = process.env;
+		const child = spawn(
+			process.execPath,
+			["--input-type=module", "-e", devServerScript(port)],
+			{ env, stdio: "ignore" },
+		);
+		const url = `http://127.0.0.1:${port}/`;
+		await waitFor(url);
+		return {
+			url,
+			close: () =>
+				new Promise((resolve) => {
+					child.once("exit", resolve);
+					child.kill();
+				}),
+		};
 	},
 	build: async () => {
-		const outDir = await mkdtemp(join(tmpdir(), "apokaliptium-build-"));
-		await build({ ...config, build: { outDir, emptyOutDir: true } });
-		const server = await preview({
-			...config,
-			build: { outDir },
-			preview: { port: 0 },
-		});
+		await mkdir("test-results", { recursive: true });
+		const outDir = await mkdtemp(join("test-results", "build-"));
+		await build({ ...config, outDir });
+		const server = await preview({ ...config, outDir });
 		return {
-			url: server.resolvedUrls.local[0],
+			url: `http://127.0.0.1:${server.port}/`,
 			outDir,
 			close: async () => {
-				await new Promise((done) => server.httpServer.close(done));
+				await server.stop();
 				await rm(outDir, { recursive: true, force: true });
 			},
 		};
@@ -48,6 +98,14 @@ describe.each(Object.keys(servers))("page on %s server", (mode) => {
 		page = await browser.newPage();
 		page.on("pageerror", (error) => pageErrors.push(error.message));
 		await page.goto(site.url);
+		// Vue islands are interactive only after hydration, when Astro removes
+		// their `ssr` attribute. A cold dev server may also reload once while
+		// optimizing dependencies; waiting covers that too.
+		await page.waitForFunction(
+			() =>
+				document.querySelector("astro-island") &&
+				!document.querySelector("astro-island[ssr]"),
+		);
 	});
 
 	afterAll(async () => {
@@ -55,7 +113,7 @@ describe.each(Object.keys(servers))("page on %s server", (mode) => {
 		await site?.close();
 	});
 
-	test("runs app.js without errors", () => {
+	test("runs its scripts without errors", () => {
 		expect(pageErrors).toEqual([]);
 	});
 

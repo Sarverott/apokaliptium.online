@@ -24,12 +24,12 @@ tasks:
       - python3 -c 'import json, pathlib, tomllib; json.loads(pathlib.Path("package.json").read_text()); json.loads(pathlib.Path("scripts/media.json").read_text()); tomllib.loads(pathlib.Path("pyproject.toml").read_text())'
 
   dev:
-    desc: Run the Vite development server for src/ on localhost:5173.
+    desc: Run the Astro development server on localhost:4321.
     cmds:
       - npm run dev
 
   test:
-    desc: Run Vitest, including the Playwright browser checks of src/.
+    desc: Run Vitest, including the Playwright browser checks of the site.
     cmds:
       - npm test
 

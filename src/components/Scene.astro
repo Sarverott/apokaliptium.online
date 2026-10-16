@@ -1,0 +1,280 @@
+---
+// One full-height frame of the film. `chapter` comes from content.json
+// (id, title, stamp); `variant` adds the modifier classes (opening, portrait,
+// blue, network, ...). The default slot is the text column, slot "visual"
+// adds layers over the image, slot "after" follows the text column.
+const { chapter, variant = "", image, alt } = Astro.props;
+---
+
+<section id={chapter.id} class:list={["scene", variant]} data-name={chapter.title}>
+	{
+		image && (
+			<div class="visual">
+				<img src={image} alt={alt} />
+				<slot name="visual" />
+			</div>
+		)
+	}
+	<div class="scene-content"><slot /></div>
+	<slot name="after" />
+	{chapter.stamp && <span class="frame-stamp">{chapter.stamp}</span>}
+</section>
+
+<script>
+	const observer = new IntersectionObserver(
+		(entries) => {
+			for (const entry of entries) {
+				entry.target.classList.toggle("visible", entry.isIntersecting);
+			}
+		},
+		{ threshold: 0.12 },
+	);
+	for (const scene of document.querySelectorAll(".scene")) {
+		observer.observe(scene);
+	}
+</script>
+
+<style>
+	.scene {
+		position: relative;
+		min-height: 100svh;
+		overflow: hidden;
+		border-bottom: 1px solid #c9b28555;
+		isolation: isolate;
+		--accent: #ddbc80;
+	}
+
+	.scene:before,
+	.scene:after {
+		content: "";
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 9px;
+		z-index: 5;
+		background: repeating-linear-gradient(
+			0deg,
+			transparent 0 27px,
+			#bdad8440 27px 40px,
+			transparent 40px 54px
+		);
+		opacity: 0.4;
+		pointer-events: none;
+	}
+
+	.scene:before {
+		left: 4px;
+	}
+
+	.scene:after {
+		right: 4px;
+	}
+
+	.visual {
+		position: absolute;
+		inset: 0;
+		z-index: -2;
+		overflow: hidden;
+	}
+
+	.visual img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		will-change: transform;
+		animation: camera 30s ease-in-out infinite alternate;
+	}
+
+	.visual:after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background:
+			linear-gradient(90deg, #05090fe8 0%, #05090f9a 38%, #05090f10 75%),
+			linear-gradient(0deg, #070b10 0%, transparent 45%, #070b1030);
+	}
+
+	.opening .visual img {
+		object-position: 57% center;
+	}
+
+	.opening .visual:after {
+		background:
+			linear-gradient(0deg, #070b10 0%, #070b1090 32%, transparent 80%),
+			linear-gradient(90deg, #070b10aa, transparent 80%);
+	}
+
+	.scene-content {
+		width: min(740px, 65%);
+		padding: 150px 0 110px;
+		margin-left: 9%;
+		position: relative;
+		z-index: 2;
+	}
+
+	.opening .scene-content {
+		padding-top: 40svh;
+		width: 80%;
+		max-width: 1100px;
+	}
+
+	.scene-content > :global(p:not(.eyebrow)) {
+		max-width: 450px;
+		font-size: 15px;
+		line-height: 1.9;
+		color: #c4c8cb;
+	}
+
+	.portrait .visual {
+		left: 48%;
+	}
+
+	.portrait .visual img {
+		object-position: center;
+		opacity: 0.9;
+	}
+
+	.portrait .visual:after {
+		background:
+			linear-gradient(90deg, #070b10, transparent 25%),
+			linear-gradient(0deg, #070b10, transparent 25%);
+	}
+
+	.portrait .scene-content {
+		width: 50%;
+		padding-top: 24svh;
+	}
+
+	.blue {
+		--accent: #8dd4e9;
+	}
+
+	.red {
+		--accent: #f28b65;
+	}
+
+	.pink {
+		--accent: #e9a1c7;
+	}
+
+	.frame-stamp {
+		font-family: "Space Grotesk", sans-serif;
+		position: absolute;
+		bottom: 30px;
+		left: 9%;
+		font-size: 8px;
+		letter-spacing: 0.2em;
+		color: #a0a7ad;
+	}
+
+	.network .scene-content {
+		padding-top: 26svh;
+	}
+
+	.network .visual img {
+		object-position: 70% center;
+	}
+
+	.network .visual:after {
+		background:
+			linear-gradient(90deg, #070b10ed, #070b1080 45%, #070b1010),
+			linear-gradient(0deg, #070b10, transparent 40%);
+	}
+
+	.choir {
+		min-height: 100svh;
+		background: radial-gradient(ellipse at 50% 65%, #142a39, transparent 65%);
+	}
+
+	.choir .scene-content {
+		padding-top: 120px;
+		padding-bottom: 25px;
+		width: 80%;
+	}
+
+	.future .scene-content {
+		padding-top: 120px;
+		padding-bottom: 35px;
+		width: 80%;
+	}
+
+	.scene .scene-content {
+		transition:
+			opacity 0.9s,
+			transform 0.9s;
+	}
+
+	.scene:not(.visible) .scene-content {
+		opacity: 0.25;
+		transform: translateY(25px);
+	}
+
+	@media (min-width: 1600px) {
+		.scene-content {
+			margin-left: 12%;
+		}
+		.opening .scene-content {
+			padding-top: 43svh;
+		}
+	}
+
+	@media (max-width: 800px) {
+		.scene-content,
+		.opening .scene-content {
+			margin-left: 8%;
+			width: 84%;
+			padding-top: 36svh;
+		}
+		.opening {
+			min-height: 95svh;
+		}
+		.opening .visual img {
+			object-position: 53% center;
+		}
+		.portrait .visual {
+			left: 0;
+			opacity: 0.65;
+		}
+		.portrait .visual img {
+			object-position: 50% 25%;
+		}
+		.portrait .visual:after {
+			background: linear-gradient(
+				0deg,
+				#070b10 0%,
+				#070b10d9 40%,
+				#070b1020 100%
+			);
+		}
+		.portrait .scene-content {
+			width: 84%;
+			padding-top: 48svh;
+			padding-bottom: 100px;
+		}
+		.scene-content > :global(p:not(.eyebrow)) {
+			font-size: 14px;
+		}
+		.network .scene-content {
+			padding-top: 30svh;
+		}
+		.network .visual img {
+			object-position: 58% center;
+		}
+		.network .visual:after {
+			background: linear-gradient(0deg, #070b10 0%, #070b10bd 60%, #070b1030);
+		}
+		.choir .scene-content,
+		.future .scene-content {
+			padding-top: 100px;
+			width: 84%;
+			padding-bottom: 20px;
+		}
+		.frame-stamp {
+			left: 8%;
+		}
+		.scene:before,
+		.scene:after {
+			width: 4px;
+		}
+	}
+</style>

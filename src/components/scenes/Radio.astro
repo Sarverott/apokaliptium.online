@@ -1,0 +1,25 @@
+---
+import AudioWave from "../AudioWave.vue";
+import Scene from "../Scene.astro";
+
+const { chapter } = Astro.props;
+---
+
+<Scene
+	chapter={chapter}
+	variant="portrait pink"
+	image="assets/radio.webp"
+	alt="Prezenterka z kotem w ciepłym, neonowym studiu Radio Kocia Muzyka"
+>
+	<p class="eyebrow">05 — RADIO KOCIA MUZYKA</p>
+	<h2>Przyszłość ma<br /><em>ludzki głos.</em></h2>
+	<p>
+		Edukacja, empatia, społeczność. Kultura i media pomagają dzielić się
+		wiedzą, słuchać siebie nawzajem i budować świat, w którym jest miejsce na
+		życzliwość.
+	</p>
+	<AudioWave />
+	<div class="keywords">
+		<span>Media</span><span>Kultura</span><span>Wiedza dla każdego</span>
+	</div>
+</Scene>

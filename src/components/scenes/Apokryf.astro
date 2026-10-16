@@ -1,0 +1,26 @@
+---
+import Scene from "../Scene.astro";
+
+const { chapter } = Astro.props;
+---
+
+<Scene
+	chapter={chapter}
+	variant="portrait blue"
+	image="assets/apokryf.webp"
+	alt="Warsztat Inceptorium Apokryf — lutowanie, elektronika i holograficzny projekt"
+>
+	<p class="eyebrow">02 — POCZĄTEK JEST TUTAJ</p>
+	<h2>Przyszłość zaczyna się<br /><em>przy warsztacie.</em></h2>
+	<p>
+		Inceptorium Apokryf. Otwarta nauka i technologia. Miejsce, w którym
+		ciekawość staje się eksperymentem, a wiedza — czymś, co możemy tworzyć
+		razem.
+	</p>
+	<div class="keywords">
+		<span>Badania</span><span>Edukacja</span><span>Prototypy</span><span
+			>Dokumentacja</span
+		>
+	</div>
+	<a href="#network" class="text-link">Połączmy wiedzę <span>↘</span></a>
+</Scene>
