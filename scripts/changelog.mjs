@@ -1,0 +1,300 @@
+import { execFile } from "node:child_process";
+import { createHash } from "node:crypto";
+import { lstat, mkdir, readFile, unlink, writeFile } from "node:fs/promises";
+import { basename, join, resolve } from "node:path";
+import { parseArgs, promisify } from "node:util";
+
+const execute = promisify(execFile);
+const manifestName = ".catalogue.json";
+
+async function git(repository, ...arguments_) {
+	const { stdout } = await execute("git", ["-C", repository, ...arguments_], {
+		encoding: "utf8",
+		maxBuffer: 64 * 1024 * 1024,
+	});
+	return stdout;
+}
+
+function slug(text, limit, fallback) {
+	return (
+		text
+			.normalize("NFKD")
+			.replace(/\p{M}/gu, "")
+			.replace(/[^a-zA-Z0-9._-]+/g, "-")
+			.replace(/-+/g, "-")
+			.replace(/^[._-]+|[._-]+$/g, "")
+			.slice(0, limit)
+			.replace(/[._-]+$/g, "") || fallback
+	);
+}
+
+function markdown(text) {
+	return text
+		.replaceAll("&", "&amp;")
+		.replaceAll("<", "&lt;")
+		.replaceAll(">", "&gt;")
+		.replaceAll("\\", "\\\\")
+		.replaceAll("|", "\\|")
+		.replaceAll("[", "\\[")
+		.replaceAll("]", "\\]")
+		.replaceAll("`", "\\`")
+		.replaceAll("*", "\\*")
+		.replaceAll("_", "\\_")
+		.replaceAll("\n", " ");
+}
+
+function block(text) {
+	const longest = Math.max(
+		0,
+		...[...text.matchAll(/`+/g)].map((match) => match[0].length),
+	);
+	const fence = "`".repeat(Math.max(3, longest + 1));
+	return `${fence}text\n${text}${text.endsWith("\n") ? "" : "\n"}${fence}`;
+}
+
+function digest(text) {
+	return createHash("sha256").update(text).digest("hex");
+}
+
+async function readText(path) {
+	try {
+		if (!(await lstat(path)).isFile()) {
+			throw new Error(`Expected a regular file: ${path}`);
+		}
+		return await readFile(path, "utf8");
+	} catch (error) {
+		if (error.code === "ENOENT") return null;
+		throw error;
+	}
+}
+
+async function commits(repository, head) {
+	const format =
+		"%H%x00%P%x00%an%x00%ae%x00%aI%x00%cn%x00%ce%x00%cI%x00%ct%x00%s%x00%B";
+	const fields = (
+		await git(
+			repository,
+			"log",
+			"--no-show-signature",
+			"-z",
+			`--format=${format}`,
+			head,
+			"--",
+		)
+	).split("\0");
+	if (fields.pop() !== "" || fields.length % 11 !== 0) {
+		throw new Error("Unexpected NUL-delimited git log output");
+	}
+	const entries = [];
+	for (let offset = 0; offset < fields.length; offset += 11) {
+		const [
+			hash,
+			parentText,
+			author,
+			authorEmail,
+			authoredAt,
+			committer,
+			committerEmail,
+			committedAt,
+			seconds,
+			subject,
+			message,
+		] = fields.slice(offset, offset + 11);
+		const unixusat = Number(seconds) * 1000;
+		if (
+			!Number.isSafeInteger(unixusat) ||
+			Number.isNaN(new Date(unixusat).getTime())
+		) {
+			throw new Error(`Invalid commit time for ${hash}`);
+		}
+		const parents = parentText ? parentText.split(" ") : [];
+		const comparison = parents.length ? [parents[0], hash] : ["--root", hash];
+		const paths = (
+			await git(
+				repository,
+				"diff-tree",
+				"--no-commit-id",
+				"--name-status",
+				"--no-renames",
+				"-r",
+				"-z",
+				...comparison,
+				"--",
+			)
+		).split("\0");
+		if (paths.at(-1) === "") paths.pop();
+		if (paths.length % 2 !== 0)
+			throw new Error(`Unexpected changed paths for ${hash}`);
+		const changes = [];
+		for (let index = 0; index < paths.length; index += 2) {
+			changes.push(`${paths[index]}\t${JSON.stringify(paths[index + 1])}`);
+		}
+		entries.push({
+			hash,
+			parents,
+			author,
+			authorEmail,
+			authoredAt,
+			committer,
+			committerEmail,
+			committedAt,
+			unixusat,
+			subject,
+			message,
+			changes,
+		});
+	}
+	return entries.sort(
+		(left, right) =>
+			right.unixusat - left.unixusat || left.hash.localeCompare(right.hash),
+	);
+}
+
+function filename(branch, entry, fullHash = false) {
+	const hash = fullHash ? entry.hash : entry.hash.slice(0, 12);
+	const title = `${slug(entry.subject, 99 - hash.length, "empty-subject")}-${hash}`;
+	return `${slug(branch, 64, "branch")}_${entry.unixusat}_${title}.md`;
+}
+
+function renderEntry(branch, entry) {
+	const metadata = {
+		generated_by: "scripts/changelog.mjs",
+		branch,
+		commit: entry.hash,
+		unixusat: entry.unixusat,
+		author: `${entry.author} <${entry.authorEmail}>`,
+		authored_at: entry.authoredAt,
+		committer: `${entry.committer} <${entry.committerEmail}>`,
+		committed_at: entry.committedAt,
+		parents: entry.parents,
+	};
+	return `---\n${Object.entries(metadata)
+		.map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+		.join(
+			"\n",
+		)}\n---\n\n# ${markdown(entry.subject || "(empty subject)")}\n\n## Commit message\n\n${block(entry.message)}\n\n## Changed paths\n\n${entry.parents.length > 1 ? "Compared with the first parent.\n\n" : ""}${entry.changes.length ? block(entry.changes.join("\n")) : "No file changes."}\n`;
+}
+
+function renderIndex(branch, head, entries, filenames) {
+	const rows = entries.map(
+		(entry) =>
+			`| ${new Date(entry.unixusat).toISOString()} | ${entry.unixusat} | [${entry.hash.slice(0, 12)}](${encodeURIComponent(filenames.get(entry.hash))}) | ${markdown(entry.subject || "(empty subject)")} |`,
+	);
+	return `# Changelog\n\nGenerated by \`task changelog\` from committed Git history.\n\n- Branch: ${markdown(branch)}\n- Head: \`${head}\`\n- Commits: ${entries.length} (including merges)\n- UNIXUSAT: committer time in Unix milliseconds, the same unit as \`Date.now()\`.\n- Branch means catalogue membership, not the branch on which a commit was originally created.\n- Newest committer time first; equal times sort by full commit ID.\n\n| Committed (UTC) | UNIXUSAT | Commit | Subject |\n| --- | --- | --- | --- |\n${rows.join("\n")}\n`;
+}
+
+async function generate(options) {
+	const repository = (
+		await git(resolve(options.repo ?? "."), "rev-parse", "--show-toplevel")
+	).trim();
+	let branch = options.branch;
+	if (!branch) {
+		try {
+			branch = (
+				await git(repository, "symbolic-ref", "--quiet", "--short", "HEAD")
+			).trim();
+		} catch (error) {
+			if (error.code !== 1) throw error;
+		}
+	}
+	const reference = branch ? `refs/heads/${branch}` : "HEAD";
+	const head = (
+		await git(repository, "rev-parse", "--verify", `${reference}^{commit}`)
+	).trim();
+	branch ??= `detached-${head.slice(0, 12)}`;
+	const entries = await commits(repository, head);
+	const filenames = new Map(
+		entries.map((entry) => [entry.hash, filename(branch, entry)]),
+	);
+	const groups = new Map();
+	for (const entry of entries) {
+		const name = filenames.get(entry.hash);
+		groups.set(name, [...(groups.get(name) ?? []), entry]);
+	}
+	for (const group of groups.values()) {
+		if (group.length > 1) {
+			for (const entry of group)
+				filenames.set(entry.hash, filename(branch, entry, true));
+		}
+	}
+	if (new Set(filenames.values()).size !== entries.length)
+		throw new Error("Changelog filename collision");
+	const output = resolve(repository, options.out ?? "docs/changelog");
+	const expected = new Map(
+		entries.map((entry) => [
+			filenames.get(entry.hash),
+			renderEntry(branch, entry),
+		]),
+	);
+	expected.set("index.md", renderIndex(branch, head, entries, filenames));
+	const oldManifest = await readText(join(output, manifestName));
+	const previous =
+		oldManifest === null ? { version: 1, files: {} } : JSON.parse(oldManifest);
+	if (
+		previous.version !== 1 ||
+		!previous.files ||
+		typeof previous.files !== "object"
+	)
+		throw new Error("Invalid changelog ownership manifest");
+	for (const name of Object.keys(previous.files)) {
+		if (basename(name) !== name || !name.endsWith(".md"))
+			throw new Error("Unsafe path in changelog ownership manifest");
+	}
+	const pending = new Map();
+	const obsolete = [];
+	for (const [name, text] of expected) {
+		const current = await readText(join(output, name));
+		if (current === text) continue;
+		if (current !== null && digest(current) !== previous.files[name]) {
+			throw new Error(
+				`Refusing to overwrite edited or unmanaged file: ${name}`,
+			);
+		}
+		pending.set(name, text);
+	}
+	for (const name of Object.keys(previous.files)) {
+		if (expected.has(name)) continue;
+		const current = await readText(join(output, name));
+		if (current === null) continue;
+		if (digest(current) !== previous.files[name])
+			throw new Error(`Refusing to delete edited file: ${name}`);
+		obsolete.push(name);
+	}
+	const manifest = `${JSON.stringify({ version: 1, branch, head, files: Object.fromEntries([...expected].map(([name, text]) => [name, digest(text)])) }, null, "\t")}\n`;
+	if (oldManifest !== manifest) pending.set(manifestName, manifest);
+	if (options.check && (pending.size || obsolete.length))
+		throw new Error("Changelog is out of date; run task changelog");
+	if (!options.check) {
+		await mkdir(output, { recursive: true });
+		for (const [name, text] of pending)
+			await writeFile(join(output, name), text);
+		for (const name of obsolete) await unlink(join(output, name));
+	}
+	console.log(
+		`${entries.length} commits on ${branch}: ${options.check ? "catalogue is current" : `${pending.size} files written, ${obsolete.length} obsolete entries removed`}.`,
+	);
+}
+
+async function main() {
+	const { values } = parseArgs({
+		options: {
+			repo: { type: "string" },
+			branch: { type: "string" },
+			out: { type: "string" },
+			check: { type: "boolean", default: false },
+			help: { type: "boolean", short: "h" },
+		},
+	});
+	if (values.help) {
+		console.log(
+			"Usage: node scripts/changelog.mjs [--repo PATH] [--branch LOCAL_BRANCH] [--out DIRECTORY] [--check]",
+		);
+		return;
+	}
+	await generate(values);
+}
+
+main().catch((error) => {
+	console.error(error.stderr?.trim() || error.message);
+	process.exitCode = 1;
+});
