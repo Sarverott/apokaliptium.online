@@ -1,3 +1,6 @@
+// NOTE: all of below code need to be rewritten into vue and react components used by astro base 
+
+
 const menu = document.querySelector("#menu"),
 	nav = document.querySelector("#chapters"),
 	motion = document.querySelector("#motion");
