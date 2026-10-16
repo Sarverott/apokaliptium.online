@@ -14,6 +14,9 @@ on:
 # Pushing the public-www branch needs write access to repository contents.
 permissions:
   contents: write
+  pages: write
+  deployments: write
+  id-token: write
 
 # One publish at a time; queued runs wait instead of cancelling a running one.
 concurrency:
@@ -66,3 +69,12 @@ jobs:
           fi
           git commit -m "Wellcome, wellcome, wellcome! looks like we have next release here... UNIXUSAT=${UNIXUSAT} we are currently."
           git push origin HEAD:public-www
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repository
+          path: './dist'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
