@@ -51,6 +51,7 @@ jobs:
 
       - name: Publish to public-www
         run: |
+          HUSKY=0
           UNIXUSAT=$(node -e 'console.log(Date.now())')
           git config user.name "Mr. Crovley"
           git config user.email mr.crovley@skriptonus.apokryf.pl
