@@ -1,0 +1,47 @@
+---
+import Scene from "../Scene.astro";
+
+const { chapter } = Astro.props;
+---
+
+<Scene
+	chapter={chapter}
+	variant="network"
+	image="assets/network.webp"
+	alt="Zespół współpracuje przy holograficznym globie połączonym siecią"
+>
+	<div class="orbital" slot="visual"></div>
+	<p class="eyebrow">03 — INFRASTRUKTURA · SPOŁECZNOŚĆ · MOŻLIWOŚCI</p>
+	<h2>Wiele węzłów.<br /><em>Wspólny kierunek.</em></h2>
+	<p>
+		Wizja Apokaliptium łączy otwartą wiedzę, zasoby i współpracę.
+		Zdecentralizowana sieć, w której lokalne działania mogą budować wspólną
+		przyszłość.
+	</p>
+	<div class="principles">
+		<div><b>01</b><span>Otwarte protokoły</span></div>
+		<div><b>02</b><span>Ciągłość wiedzy</span></div>
+		<div><b>03</b><span>Zasoby i logistyka</span></div>
+	</div>
+</Scene>
+
+<style>
+	.principles {
+		margin-top: 40px;
+		max-width: 380px;
+	}
+
+	.principles div {
+		display: flex;
+		gap: 30px;
+		border-top: 1px solid #ffffff30;
+		padding: 17px 0;
+		font-size: 12px;
+	}
+
+	.principles b {
+		color: var(--accent);
+		font-weight: 400;
+		font-family: monospace;
+	}
+</style>

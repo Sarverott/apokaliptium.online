@@ -1,0 +1,10 @@
+{
+	"name": "Apokaliptium — Wspólna przyszłość",
+	"short_name": "Apokaliptium",
+	"description": "Od otwartej wiedzy do cywilizacji typu III. Filmowa podróż przez wizję Apokaliptium.",
+	"lang": "pl",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#070b10",
+	"theme_color": "#070b10"
+}

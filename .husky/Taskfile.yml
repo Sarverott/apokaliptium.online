@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+# Procedures for git hooks. Included by the root Taskfile as `hooks:`, running
+# from the repository root; each hook script in .husky/ calls one task here.
+
+version: '3'
+
+tasks:
+  pre-commit:
+    desc: Run before every commit - syntax check, Biome on staged files, tests.
+    cmds:
+      - task: :check
+      - task: lint:staged
+      - task: :test
+
+  lint:staged:
+    desc: Biome on staged files only.
+    cmds:
+      - npx biome check --staged --no-errors-on-unmatched

@@ -5,6 +5,11 @@ version: '3'
 vars:
   GITRECON_BIN: gitrecon
 
+includes:
+  hooks:
+    taskfile: .husky/Taskfile.yml
+    dir: .
+
 tasks:
   default:
     desc: List the available project procedures.
@@ -19,12 +24,12 @@ tasks:
       - python3 -c 'import json, pathlib, tomllib; json.loads(pathlib.Path("package.json").read_text()); json.loads(pathlib.Path("scripts/media.json").read_text()); tomllib.loads(pathlib.Path("pyproject.toml").read_text())'
 
   dev:
-    desc: Run the Vite development server for src/ on localhost:5173.
+    desc: Run the Astro development server on localhost:4321.
     cmds:
       - npm run dev
 
   test:
-    desc: Run Vitest, including the Playwright browser checks of src/.
+    desc: Run Vitest, including the Playwright browser checks of the site.
     cmds:
       - npm test
 
@@ -32,11 +37,6 @@ tasks:
     desc: Lint and check formatting with Biome; nothing gets changed.
     cmds:
       - npm run lint
-
-  lint:staged:
-    desc: Biome on staged files only, used by the husky pre-commit hook.
-    cmds:
-      - npx biome check --staged --no-errors-on-unmatched
 
   audit:
     desc: Report known vulnerabilities in installed npm packages.
