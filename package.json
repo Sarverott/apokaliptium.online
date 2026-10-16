@@ -18,7 +18,7 @@
   "author": "Sett Sarverott",
   "type": "module",
   "scripts": {
-    "check": "node --check app.js && node --check scripts/hf-read.mjs",
+    "check": "node --check src/app.js && node --check scripts/hf-read.mjs",
     "test": "task check"
   }
 }

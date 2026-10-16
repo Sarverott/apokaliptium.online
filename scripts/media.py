@@ -75,7 +75,7 @@ def verify(manifest):
         if size != entry["bytes"] or digest.hexdigest() != entry["sha256"]:
             raise ValueError(f"Public media verification failed: {entry['name']}")
         print(f"Verified {entry['name']}")
-    print("All public media verified. Local originals are unchanged.")
+    print(f"Verified {len(manifest['files'])} public media files against recorded SHA-256 hashes.")
 
 
 def main():

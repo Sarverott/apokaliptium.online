@@ -7,13 +7,17 @@ accept the name without pretending to remember earlier sessions.
 ## Current priority
 
 Cleanup and continuity first. Sett explicitly postponed Astro on 2026-10-16.
-Keep the working HTML/CSS/JavaScript site and React reference draft intact.
+Sett consolidated static source and recycled React components under `src/`
+in `b11c338`, and removed the old draft and local media directories.
 The component migration and style-splitting notes remain future work.
+TypeScript, Astro, React, Vue, animejs, threejs, xterm and the other planned
+frontend dependencies are not installed. Do not assume a runnable framework
+app or install that stack while the task is media verification.
 
 ## Session rhythm
 
 1. Read `git status`, recent commits, changed files and their NOTE comments.
-2. Read `docs/devlog/scrapnote.md` and the letters in `docs/.agents/`.
+2. Read the latest `docs/devlog/scrapnote-*.md` and letters in `docs/.agents/`.
 3. Implement concrete instructions; preserve unresolved decisions as TODOs.
 4. Verify the result and leave the working tree for Sett to review and commit.
 
@@ -34,23 +38,29 @@ The component migration and style-splitting notes remain future work.
 
 ## Layout
 
-- `index.html`, `style.css`, `app.js`: the current static site.
-- `assets/`: seven original WebP images and Sett's media instruction.
-- `draft-result-aistudio/`: inspected React/Vite reference, pending migration.
+- `src/index.html`, `src/style.css`, `src/app.js`: static reference source.
+- `src/App.tsx`, `src/main.tsx`, `src/components/`, `src/data/`, `src/types.ts`:
+  recycled React draft; dependencies and framework setup remain pending.
+- `public/assets/.map.json`: Sett's placeholder for external media mapping.
 - `scripts/`: media transfer and anonymous reading tools, documented there.
 - `pyproject.toml`: script dependencies; this is not a Python application.
 - `docs/devlog/`: work records; `docs/.agents/`: letters written by agents.
 
 ## Media and checks
 
-The destination is the public HF bucket `Sarverott/mediacontainer`. Never put
-upload credentials in browser code. Plan with `task media:plan`; upload with
-`task media:upload`. Verify anonymous downloads against the manifest's SHA-256.
-Keep `assets/` until every upload is verified and site references are updated.
-The scripts deliberately never delete local or remote files.
+Sett uploaded media to the public HF bucket `Sarverott/mediacontainer` and
+removed the local originals. The seven WebP files use original names at the
+bucket root, not hashed directories. Anonymous downloads matched the manifest's
+SHA-256 and historical originals in `bd576d9` on 2026-10-16.
+Read with `node scripts/hf-read.mjs hero.webp`; verify with `task media:verify`.
+These use Node/Python standard libraries and need no frontend dependencies.
+Upload/plan tasks require local originals, no longer present in this checkout.
+Do not re-upload, rename objects or put credentials in browser code unasked.
 
 `task check` checks syntax and parses configuration. `task serve` serves the
-existing site locally. Use a browser when changing behaviour. `task recon`
+repository root; it is not a configured frontend development server. Source
+still references removed local media paths; frontend integration is pending.
+Use a browser when changing behaviour. `task recon`
 runs gitrecon without saving to its datasets; override `GITRECON_BIN` when it
 is not on PATH. Report actual checks and unfinished steps, never implied success.
 

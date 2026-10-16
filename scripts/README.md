@@ -2,10 +2,11 @@
 
 Destination: https://huggingface.co/buckets/Sarverott/mediacontainer
 
-The original images stay in `assets/` until upload and public verification are
-complete. `media.json` lists sizes, SHA-256 hashes and destination keys.
-Keys include the full content hash under `apokaliptium.online/` so different
-versions cannot overwrite each other. These procedures never delete files.
+Sett uploaded the images and removed the local `assets/` directory. The seven
+WebP files use original names at the bucket root. `media.json` records the
+actual keys, sizes and SHA-256 hashes. Anonymous downloads were verified
+against the manifest and historical originals on 2026-10-16.
+The bucket also lists six PNG files, outside the WebP verification manifest.
 
 ## Inspect
 
@@ -13,13 +14,15 @@ versions cannot overwrite each other. These procedures never delete files.
 task media:plan
 ```
 
-This validates every original and prints the plan without network access.
+This requires local originals in `assets/`, no longer present in this checkout.
+It validates them and prints the plan without network access.
 If an image changes, update its size, SHA-256 and content-addressed key in the
 manifest before uploading.
 
 ## Upload
 
-Install the Python tooling with `uv sync`. Configure write access locally using
+For future uploads with local originals, install Python tooling with `uv sync`.
+Configure write access locally using
 `hf auth login` or `HF_TOKEN`; alternatively configure Hugging Face S3 credentials
 through the usual AWS environment variables or profile. An HF token and an S3
 access key are different credentials. Do not put either in this repository or
@@ -38,15 +41,19 @@ can be retried; success is reported only after all public downloads verify.
 
 ```sh
 task media:verify
-node scripts/hf-read.mjs <object-key>
+node scripts/hf-read.mjs hero.webp > /tmp/apokaliptium-hero.webp
 ```
 
 The JavaScript reader replaces `src/hf-mount.js` and writes object bytes to
 stdout. Public HTTP reads need no AWS SDK or credentials. A public bucket does
-not grant upload access; missing objects return an error until uploaded.
+not grant upload access. Both reading commands use standard libraries and need
+no frontend dependencies installed.
 
-After verification, update every site image URL and the future timeline's CSS
-background URL before deleting `assets/`. Astro migration remains postponed.
+Public URL example:
+https://huggingface.co/buckets/Sarverott/mediacontainer/resolve/hero.webp
+
+The static and React sources still reference local media URLs; frontend
+integration is pending. Astro migration remains postponed.
 
 References: [HF bucket uploads](https://huggingface.co/docs/huggingface_hub/guides/buckets)
 and [S3 configuration](https://huggingface.co/docs/hub/storage-buckets-s3).
