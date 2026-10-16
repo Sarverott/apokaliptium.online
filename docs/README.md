@@ -31,7 +31,9 @@ Each filename has the form `{branch}_{UNIXUSAT}_{title}.md`:
 - Entries contain full commit IDs, author and committer identities/dates, and
   changed paths. The index sorts newest committer time first, then by full ID.
 
-Only available local history is read; fetch full history yourself when needed.
+Complete local history is required. Shallow repositories are refused before
+writing or checking output; fetch full history (for example, `git fetch
+--unshallow`) or use a full clone. The generator never fetches automatically.
 Detached HEAD gets a `detached-<commit>` label. Selecting another branch does
 not switch the working tree and replaces the selected output's generated
 catalogue; use a different output directory to keep several catalogues.
@@ -48,6 +50,21 @@ removes only obsolete entries owned by that manifest, and keeps handwritten
 files. Edited generated files cause a failure before any writes; move personal
 notes to their own file rather than editing generated history.
 
-Refresh the catalogue after committing changes. It describes committed history,
-not staged or uncommitted work; its first generated snapshot cannot contain its
-own future commit. The catalogue is not added to the public website build.
+## Committed snapshots and freshness
+
+Generation records the selected branch's current commit. `--check` accepts a
+snapshot after it is committed when every later commit changes only paths inside
+the selected catalogue directory. The recorded head must remain an ancestor of
+the selected branch, and every recorded page must still match independently
+regenerated content. This avoids requiring a catalogue to describe its own
+future recording commit while keeping the check read-only.
+
+Commits touching anything outside the catalogue, mixed commits and empty
+metadata-only commits make the snapshot stale. A normal generation still
+records all reachable commits, including earlier catalogue-recording commits;
+they are not permanently excluded from history. To keep checks green, generate
+after source changes are committed, then commit only the generated catalogue.
+
+Staged or uncommitted work is not catalogued. Selecting a different branch or
+rewriting history requires a fresh snapshot. The catalogue is not added to the
+public website build.

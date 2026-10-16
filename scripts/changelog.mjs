@@ -1,7 +1,8 @@
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import { lstat, mkdir, readFile, unlink, writeFile } from "node:fs/promises";
-import { basename, join, resolve } from "node:path";
+import { basename, join, relative, resolve, sep } from "node:path";
+import { pathToFileURL } from "node:url";
 import { parseArgs, promisify } from "node:util";
 
 const execute = promisify(execFile);
@@ -40,6 +41,7 @@ function markdown(text) {
 		.replaceAll("`", "\\`")
 		.replaceAll("*", "\\*")
 		.replaceAll("_", "\\_")
+		.replaceAll("#", "\\#")
 		.replaceAll("\n", " ");
 }
 
@@ -126,8 +128,10 @@ async function commits(repository, head) {
 		if (paths.length % 2 !== 0)
 			throw new Error(`Unexpected changed paths for ${hash}`);
 		const changes = [];
+		const changedPaths = [];
 		for (let index = 0; index < paths.length; index += 2) {
 			changes.push(`${paths[index]}\t${JSON.stringify(paths[index + 1])}`);
+			changedPaths.push(paths[index + 1]);
 		}
 		entries.push({
 			hash,
@@ -142,6 +146,7 @@ async function commits(repository, head) {
 			subject,
 			message,
 			changes,
+			changedPaths,
 		});
 	}
 	return entries.sort(
@@ -154,6 +159,71 @@ function filename(branch, entry, fullHash = false) {
 	const hash = fullHash ? entry.hash : entry.hash.slice(0, 12);
 	const title = `${slug(entry.subject, 99 - hash.length, "empty-subject")}-${hash}`;
 	return `${slug(branch, 64, "branch")}_${entry.unixusat}_${title}.md`;
+}
+
+export function filenamesFor(branch, entries) {
+	const filenames = new Map(
+		entries.map((entry) => [entry.hash, filename(branch, entry)]),
+	);
+	const groups = new Map();
+	for (const entry of entries) {
+		const name = filenames.get(entry.hash);
+		groups.set(name, [...(groups.get(name) ?? []), entry]);
+	}
+	for (const group of groups.values()) {
+		if (group.length > 1) {
+			for (const entry of group)
+				filenames.set(entry.hash, filename(branch, entry, true));
+		}
+	}
+	if (new Set(filenames.values()).size !== entries.length)
+		throw new Error("Changelog filename collision");
+	return filenames;
+}
+
+async function snapshotHead(
+	repository,
+	head,
+	branch,
+	previous,
+	output,
+	entries,
+) {
+	if (!previous.head || previous.head === head) return head;
+	if (
+		previous.branch !== branch ||
+		!/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(previous.head)
+	) {
+		throw new Error("Changelog is out of date; run task changelog");
+	}
+	try {
+		await git(repository, "merge-base", "--is-ancestor", previous.head, head);
+	} catch (error) {
+		if (error.code !== 1) throw error;
+		throw new Error(
+			"Changelog snapshot is not an ancestor of the selected branch",
+		);
+	}
+	const directory = relative(repository, output).split(sep).join("/");
+	const newer = new Set(
+		(await git(repository, "rev-list", head, `^${previous.head}`, "--"))
+			.trim()
+			.split("\n"),
+	);
+	const onlyCatalogue =
+		directory &&
+		directory !== ".." &&
+		!directory.startsWith("../") &&
+		entries
+			.filter((entry) => newer.has(entry.hash))
+			.every(
+				(entry) =>
+					entry.changedPaths.length > 0 &&
+					entry.changedPaths.every((path) => path.startsWith(`${directory}/`)),
+			);
+	if (!onlyCatalogue)
+		throw new Error("Changelog is out of date; run task changelog");
+	return previous.head;
 }
 
 function renderEntry(branch, entry) {
@@ -187,6 +257,14 @@ async function generate(options) {
 	const repository = (
 		await git(resolve(options.repo ?? "."), "rev-parse", "--show-toplevel")
 	).trim();
+	if (
+		(await git(repository, "rev-parse", "--is-shallow-repository")).trim() ===
+		"true"
+	) {
+		throw new Error(
+			"Shallow Git history: fetch complete history before generating or checking the catalogue (git fetch --unshallow).",
+		);
+	}
 	let branch = options.branch;
 	if (!branch) {
 		try {
@@ -198,35 +276,11 @@ async function generate(options) {
 		}
 	}
 	const reference = branch ? `refs/heads/${branch}` : "HEAD";
-	const head = (
+	let head = (
 		await git(repository, "rev-parse", "--verify", `${reference}^{commit}`)
 	).trim();
 	branch ??= `detached-${head.slice(0, 12)}`;
-	const entries = await commits(repository, head);
-	const filenames = new Map(
-		entries.map((entry) => [entry.hash, filename(branch, entry)]),
-	);
-	const groups = new Map();
-	for (const entry of entries) {
-		const name = filenames.get(entry.hash);
-		groups.set(name, [...(groups.get(name) ?? []), entry]);
-	}
-	for (const group of groups.values()) {
-		if (group.length > 1) {
-			for (const entry of group)
-				filenames.set(entry.hash, filename(branch, entry, true));
-		}
-	}
-	if (new Set(filenames.values()).size !== entries.length)
-		throw new Error("Changelog filename collision");
 	const output = resolve(repository, options.out ?? "docs/changelog");
-	const expected = new Map(
-		entries.map((entry) => [
-			filenames.get(entry.hash),
-			renderEntry(branch, entry),
-		]),
-	);
-	expected.set("index.md", renderIndex(branch, head, entries, filenames));
 	const oldManifest = await readText(join(output, manifestName));
 	const previous =
 		oldManifest === null ? { version: 1, files: {} } : JSON.parse(oldManifest);
@@ -234,12 +288,37 @@ async function generate(options) {
 		previous.version !== 1 ||
 		!previous.files ||
 		typeof previous.files !== "object"
-	)
+	) {
 		throw new Error("Invalid changelog ownership manifest");
-	for (const name of Object.keys(previous.files)) {
-		if (basename(name) !== name || !name.endsWith(".md"))
-			throw new Error("Unsafe path in changelog ownership manifest");
 	}
+	for (const name of Object.keys(previous.files)) {
+		if (basename(name) !== name || !name.endsWith(".md")) {
+			throw new Error("Unsafe path in changelog ownership manifest");
+		}
+	}
+	let entries = await commits(repository, head);
+	if (options.check) {
+		const recordedHead = await snapshotHead(
+			repository,
+			head,
+			branch,
+			previous,
+			output,
+			entries,
+		);
+		if (recordedHead !== head) {
+			head = recordedHead;
+			entries = await commits(repository, head);
+		}
+	}
+	const filenames = filenamesFor(branch, entries);
+	const expected = new Map(
+		entries.map((entry) => [
+			filenames.get(entry.hash),
+			renderEntry(branch, entry),
+		]),
+	);
+	expected.set("index.md", renderIndex(branch, head, entries, filenames));
 	const pending = new Map();
 	const obsolete = [];
 	for (const [name, text] of expected) {
@@ -266,9 +345,12 @@ async function generate(options) {
 		throw new Error("Changelog is out of date; run task changelog");
 	if (!options.check) {
 		await mkdir(output, { recursive: true });
-		for (const [name, text] of pending)
-			await writeFile(join(output, name), text);
+		for (const [name, text] of pending) {
+			if (name !== manifestName) await writeFile(join(output, name), text);
+		}
 		for (const name of obsolete) await unlink(join(output, name));
+		if (pending.has(manifestName))
+			await writeFile(join(output, manifestName), manifest);
 	}
 	console.log(
 		`${entries.length} commits on ${branch}: ${options.check ? "catalogue is current" : `${pending.size} files written, ${obsolete.length} obsolete entries removed`}.`,
@@ -294,7 +376,12 @@ async function main() {
 	await generate(values);
 }
 
-main().catch((error) => {
-	console.error(error.stderr?.trim() || error.message);
-	process.exitCode = 1;
-});
+if (
+	process.argv[1] &&
+	import.meta.url === pathToFileURL(resolve(process.argv[1])).href
+) {
+	main().catch((error) => {
+		console.error(error.stderr?.trim() || error.message);
+		process.exitCode = 1;
+	});
+}

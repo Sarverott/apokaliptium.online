@@ -10,9 +10,10 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { afterEach, describe, expect, test } from "vitest";
+import { filenamesFor } from "../scripts/changelog.mjs";
 
 const execute = promisify(execFile);
 const script = fileURLToPath(
@@ -124,7 +125,7 @@ describe("changelog catalogue", () => {
 		expect(files["index.md"].text).toContain("Keep \\| \\[brackets\\]");
 	});
 
-	test("keeps empty subjects and colliding titles within the filename limit", async () => {
+	test("keeps empty subjects and duplicate long titles within the filename limit", async () => {
 		const directory = await repository();
 		await commit(directory, "", "empty.txt", "empty subject");
 		const title = `Same / Łódź ${"long ".repeat(40)}`;
@@ -300,5 +301,110 @@ describe("changelog catalogue", () => {
 		await expect(stat(join(directory, "missing-output"))).rejects.toMatchObject(
 			{ code: "ENOENT" },
 		);
+	});
+
+	test("preserves edited obsolete entries before any branch-switch writes", async () => {
+		const directory = await repository();
+		const first = await commit(directory, "Initial");
+		await git(directory, ["branch", "older", first]);
+		await commit(directory, "Next", "next.txt");
+		await generate(directory);
+		const output = join(directory, "docs/changelog");
+		const entry = (await readdir(output)).find((name) =>
+			name.startsWith("master_"),
+		);
+		await writeFile(join(output, entry), "Edited obsolete page\n");
+		const before = await snapshot(directory);
+		await expect(
+			generate(directory, "--branch", "older"),
+		).rejects.toMatchObject({
+			stderr: expect.stringContaining("Refusing to delete edited file"),
+		});
+		expect(await snapshot(directory)).toEqual(before);
+	});
+
+	test("expands real short-hash collisions to full IDs within the title limit", () => {
+		const entries = [
+			{
+				hash: "a".repeat(12) + "b".repeat(28),
+				unixusat: 1790816523000,
+				subject: "Repeated ".repeat(30),
+			},
+			{
+				hash: "a".repeat(12) + "c".repeat(28),
+				unixusat: 1790816523000,
+				subject: "Repeated ".repeat(30),
+			},
+		];
+		const filenames = filenamesFor("master", entries);
+		expect(new Set(filenames.values()).size).toBe(2);
+		for (const entry of entries) {
+			const name = filenames.get(entry.hash);
+			expect(name).toContain(entry.hash);
+			expect(name.match(/^master_\d+_(.*)\.md$/)[1].length).toBeLessThanOrEqual(
+				100,
+			);
+		}
+	});
+
+	test("--check stays green after committing only the generated catalogue", async () => {
+		const directory = await repository();
+		await commit(directory, "Initial");
+		await generate(directory);
+		await git(directory, ["add", "--", "docs/changelog"]);
+		await git(directory, ["commit", "-m", "Record catalogue"]);
+		const before = await snapshot(directory);
+		expect((await generate(directory, "--check")).stdout).toContain(
+			"catalogue is current",
+		);
+		expect(await snapshot(directory)).toEqual(before);
+		await git(directory, [
+			"commit",
+			"--allow-empty",
+			"-m",
+			"Metadata-only commit",
+		]);
+		await expect(generate(directory, "--check")).rejects.toMatchObject({
+			stderr: expect.stringContaining("out of date"),
+		});
+	});
+
+	test("rejects shallow clones before creating output or checking a snapshot", async () => {
+		const directory = await repository();
+		await commit(directory, "Initial");
+		await commit(directory, "Second", "second.txt");
+		await commit(directory, "Third", "third.txt");
+		const parent = await mkdtemp(join(tmpdir(), "apokaliptium-shallow-"));
+		repositories.push(parent);
+		const shallow = join(parent, "clone");
+		await git(directory, [
+			"clone",
+			"--depth=2",
+			pathToFileURL(directory).href,
+			shallow,
+		]);
+		expect(await git(shallow, ["rev-parse", "--is-shallow-repository"])).toBe(
+			"true",
+		);
+		for (const arguments_ of [[], ["--check"]]) {
+			await expect(generate(shallow, ...arguments_)).rejects.toMatchObject({
+				stderr: expect.stringContaining("Shallow Git history"),
+			});
+		}
+		await expect(stat(join(shallow, "docs/changelog"))).rejects.toMatchObject({
+			code: "ENOENT",
+		});
+	});
+
+	test("escapes leading heading markers without changing the full message", async () => {
+		const directory = await repository();
+		await commit(directory, "# Heading");
+		await generate(directory);
+		const files = await snapshot(directory);
+		const entry = Object.values(files).find(({ text }) =>
+			text.includes("## Commit message"),
+		);
+		expect(entry.text).toContain("# \\# Heading");
+		expect(entry.text).toContain("```text\n# Heading\n```");
 	});
 });
