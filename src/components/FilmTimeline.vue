@@ -1,11 +1,16 @@
 <script setup>
-defineProps({ steps: { type: Array, required: true } });
+// `image` is one wide picture; each frame shows its own slice of it.
+defineProps({
+	steps: { type: Array, required: true },
+	image: { type: String, required: true },
+});
 </script>
 <template>
 	<div
 		class="film-timeline"
 		tabindex="0"
 		aria-label="Sześć kadrów wizji przyszłości. Przewijaj poziomo."
+		:style="{ '--frames': `url(${image})` }"
 	>
 		<article v-for="step in steps" :key="step.title" class="timeline-frame">
 			<div
@@ -40,7 +45,7 @@ defineProps({ steps: { type: Array, required: true } });
 
 .timeline-image {
 	height: 290px;
-	background-image: url("/assets/future.webp");
+	background-image: var(--frames);
 	background-size: 600% 100%;
 	border: 1px solid #ffffff20;
 	transition:

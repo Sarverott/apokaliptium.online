@@ -1,4 +1,7 @@
 {
+	"media": {
+		"base": "https://huggingface.co/buckets/Sarverott/mediacontainer/resolve/"
+	},
 	"chapters": [
 		{
 			"id": "opening",

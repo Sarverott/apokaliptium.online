@@ -1,4 +1,5 @@
 ---
+import { media } from "../../lib/media.js";
 import Scene from "../Scene.astro";
 
 const { chapter } = Astro.props;
@@ -7,7 +8,7 @@ const { chapter } = Astro.props;
 <Scene
 	chapter={chapter}
 	variant="portrait blue"
-	image="assets/apokryf.webp"
+	image={media("apokryf.webp")}
 	alt="Warsztat Inceptorium Apokryf — lutowanie, elektronika i holograficzny projekt"
 >
 	<p class="eyebrow">02 — POCZĄTEK JEST TUTAJ</p>
