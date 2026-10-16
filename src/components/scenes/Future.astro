@@ -1,4 +1,5 @@
 ---
+import { media } from "../../lib/media.js";
 import FilmTimeline from "../FilmTimeline.vue";
 import Scene from "../Scene.astro";
 
@@ -13,7 +14,7 @@ const { chapter, timeline } = Astro.props;
 		zaczyna się dziś: od wiedzy, narzędzi i współpracy.
 	</p>
 	<Fragment slot="after">
-		<FilmTimeline steps={timeline} />
+		<FilmTimeline steps={timeline} image={media("future.webp")} />
 		<div class="future-bottom">
 			<p>More minds.<br /><em>A kinder universe.</em></p>
 			<a class="text-link" href="#opening">Odtwórz od początku <span>↥</span></a>

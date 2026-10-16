@@ -10,8 +10,9 @@ The site is an Astro page built from Vue and Astro components. Sett started
 the migration after `d55751f` (Vue integration, `tsconfig.json`, the first two
 Vue components); Cleo split the remaining page, `app.js` and `style.css`
 into components and removed the React draft. `@astrojs/react` is installed
-but not enabled. TypeScript itself is not installed. Images still point at
-removed local paths; integration with the media bucket is the open task.
+but not enabled. TypeScript itself is not installed. Images load from the
+media bucket through `media()` in `src/lib/media.js` (base URL in
+`content.json`).
 
 ## Session rhythm
 
@@ -71,9 +72,9 @@ Do not re-upload, rename objects or put credentials in browser code unasked.
 browser checks. `task lint` runs Biome without changing files. `task inspect`
 crawls a page with Crawlee (default the dev server); sandboxed DNS may need
 network access. `task check` checks syntax and parses configuration.
-`task serve` serves the repository root; use `task dev` for the site. Source
-still references removed local media paths; frontend integration is pending.
-Use a browser when changing behaviour. `task recon`
+`task serve` serves the repository root; use `task dev` for the site.
+Browser tests skip on GitHub Actions (Sett's decision; see the NOTE in
+`tests/site.test.js`). Use a browser when changing behaviour. `task recon`
 runs gitrecon without saving to its datasets; override `GITRECON_BIN` when it
 is not on PATH. Report actual checks and unfinished steps, never implied success.
 

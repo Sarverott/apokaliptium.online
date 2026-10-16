@@ -1,4 +1,5 @@
 ---
+import { media } from "../../lib/media.js";
 import AudioWave from "../AudioWave.vue";
 import Scene from "../Scene.astro";
 
@@ -8,7 +9,7 @@ const { chapter } = Astro.props;
 <Scene
 	chapter={chapter}
 	variant="portrait pink"
-	image="assets/radio.webp"
+	image={media("radio.webp")}
 	alt="Prezenterka z kotem w ciepłym, neonowym studiu Radio Kocia Muzyka"
 >
 	<p class="eyebrow">05 — RADIO KOCIA MUZYKA</p>

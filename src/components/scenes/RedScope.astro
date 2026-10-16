@@ -1,4 +1,5 @@
 ---
+import { media } from "../../lib/media.js";
 import Scene from "../Scene.astro";
 
 const { chapter } = Astro.props;
@@ -7,7 +8,7 @@ const { chapter } = Astro.props;
 <Scene
 	chapter={chapter}
 	variant="portrait red"
-	image="assets/redscope.webp"
+	image={media("redscope.webp")}
 	alt="Czerwono oświetlony warsztat RedScope Technologies z robotem przemysłowym"
 >
 	<p class="eyebrow">04 — REDSCOPE TECHNOLOGIES</p>

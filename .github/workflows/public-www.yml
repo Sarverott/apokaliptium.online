@@ -34,10 +34,11 @@ jobs:
           node-version: 24
           cache: npm
 
+      # Browser checks skip themselves on GitHub Actions (tests/site.test.js),
+      # so no Chromium is installed here. To run them again, remove their
+      # skipIf and add: npx playwright install --with-deps chromium
       - name: Install
-        run: |
-          npm ci
-          npx playwright install --with-deps chromium
+        run: npm ci
 
       - name: Test
         run: npm test

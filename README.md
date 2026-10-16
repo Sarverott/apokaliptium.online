@@ -15,5 +15,5 @@
 
 The site is an Astro page with Vue components under `src/`. Sett uploaded
 media and removed the local copies. Anonymous downloads match the originals
-in Git; frontend integration with those URLs is pending.
+in Git; the site loads the images from the bucket.
 Deploy only the site files and media; never publish the whole repository.

@@ -52,8 +52,8 @@ no frontend dependencies installed.
 Public URL example:
 https://huggingface.co/buckets/Sarverott/mediacontainer/resolve/hero.webp
 
-The site's components still reference local media URLs; frontend
-integration is pending.
+The site builds these URLs with `media()` in `src/lib/media.js`; the base
+URL lives in `src/data/content.json` under `media.base`.
 
 References: [HF bucket uploads](https://huggingface.co/docs/huggingface_hub/guides/buckets)
 and [S3 configuration](https://huggingface.co/docs/hub/storage-buckets-s3).

@@ -1,4 +1,5 @@
 ---
+import { media } from "../../lib/media.js";
 import Scene from "../Scene.astro";
 
 const { chapter } = Astro.props;
@@ -7,7 +8,7 @@ const { chapter } = Astro.props;
 <Scene
 	chapter={chapter}
 	variant="network"
-	image="assets/network.webp"
+	image={media("network.webp")}
 	alt="Zespół współpracuje przy holograficznym globie połączonym siecią"
 >
 	<div class="orbital" slot="visual"></div>
