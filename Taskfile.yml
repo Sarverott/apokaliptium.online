@@ -39,7 +39,7 @@ tasks:
       - npx biome check --staged --no-errors-on-unmatched
 
   audit:
-    desc: npm audit without optional dependencies (their findings are upstream).
+    desc: Report known vulnerabilities in installed npm packages.
     cmds:
       - npm run audit
 
