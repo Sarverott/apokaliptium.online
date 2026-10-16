@@ -41,11 +41,15 @@ Vite serves `src/` as the working dev server until the migration starts.
 - `src/index.html`, `src/style.css`, `src/app.js`: static reference source.
 - `src/App.tsx`, `src/main.tsx`, `src/components/`, `src/data/`, `src/types.ts`:
   recycled React draft; dependencies and framework setup remain pending.
-- `public/assets/.map.json`: Sett's placeholder for external media mapping.
+- `public/`: copied to the site root by Vite: `robots.txt`, `sitemap.xml`,
+  `llms.txt`, `manifest.json`; `public/assets/.map.json` is Sett's placeholder
+  for external media mapping.
 - `scripts/`: media transfer and anonymous reading tools, documented there.
 - `pyproject.toml`: script dependencies; this is not a Python application.
 - `vite.config.js`, `vitest.config.js`, `astro.config.mjs`, `biome.json`:
-  tool configs; `tests/`: Vitest suites driving Playwright against `src/`.
+  tool configs; `tests/`: Vitest suites driving Playwright against the dev
+  server and the production build. `.husky/`: hook scripts calling tasks in
+  `.husky/Taskfile.yml`, included by the root Taskfile as `hooks:`.
 - `docs/devlog/`: work records; `docs/.agents/`: letters written by agents.
 
 ## Media and checks
@@ -71,8 +75,10 @@ is not on PATH. Report actual checks and unfinished steps, never implied success
 
 ## Documentation boundary
 
-Sett instructed deletion of `docs/README.md` after reading. Do not recreate it
-until Sett commits that deletion. Root `README.md` remains the public guide.
+Sett re-created `docs/README.md` empty in `b7b7184`; Markdown and `.github/`
+work is offered to Joker. Root `README.md` remains the public guide.
 `docs/.agents/` is agent-authored writing for oneself or another agent; humans
 have read-only access by agreement. Do not chmod or publish that area.
-Deploy only site files and media, never the whole working directory.
+Deploy only site files and media, never the whole working directory. GitHub
+Pages currently builds `master` at `/` with Jekyll, so the repository itself is
+served; Sett wants the build published from a separate branch instead.

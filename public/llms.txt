@@ -1,0 +1,22 @@
+# Apokaliptium
+
+> Apokaliptium is an open platform for a shared future: open knowledge,
+> technology and people, with a Type III civilization as the far horizon.
+> The site is a single Polish-language page told in seven scenes.
+
+The page is maintained by Sett Sarverott. Illustrations are concept art.
+
+## Scenes
+
+- [01 Wspólny horyzont](https://www.apokaliptium.online/#opening): the shared horizon.
+- [02 Inceptorium Apokryf](https://www.apokaliptium.online/#apokryf): open science and technology; research, education, prototypes, documentation.
+- [03 Sieć możliwości](https://www.apokaliptium.online/#network): a decentralized network of open protocols, knowledge continuity, resources and logistics.
+- [04 RedScope Technologies](https://www.apokaliptium.online/#redscope): engineering, production and commercialization.
+- [05 Radio Kocia Muzyka](https://www.apokaliptium.online/#radio): media, culture and knowledge for everyone.
+- [06 Różne umysły](https://www.apokaliptium.online/#choir): people and artificial intellects working together.
+- [07 Droga do typu III](https://www.apokaliptium.online/#future): the path from small steps to galactic scale.
+
+## Optional
+
+- [UCDI archive](https://github.com/the-House-of-Anubis/Choirs-of-UCDI)
+- [Source repository](https://github.com/apokaliptium/apokaliptium.online)

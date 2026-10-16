@@ -1,33 +1,60 @@
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { chromium } from "playwright";
-import { createServer } from "vite";
+import { build, createServer, preview } from "vite";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 
-// Browser checks of the static reference source in src/, served by Vite.
+// Browser checks of the page in src/: once on the Vite dev server, once on
+// the production build served by `vite preview`. The build goes to a
+// temporary directory so dist/ stays untouched.
 
-let server;
-let browser;
-let page;
-const pageErrors = [];
+const config = { configFile: "vite.config.js", logLevel: "silent" };
 
-beforeAll(async () => {
-	server = await createServer({
-		configFile: "vite.config.js",
-		server: { port: 0 },
-		logLevel: "silent",
+const servers = {
+	dev: async () => {
+		const server = await createServer({ ...config, server: { port: 0 } });
+		await server.listen();
+		return { url: server.resolvedUrls.local[0], close: () => server.close() };
+	},
+	build: async () => {
+		const outDir = await mkdtemp(join(tmpdir(), "apokaliptium-build-"));
+		await build({ ...config, build: { outDir, emptyOutDir: true } });
+		const server = await preview({
+			...config,
+			build: { outDir },
+			preview: { port: 0 },
+		});
+		return {
+			url: server.resolvedUrls.local[0],
+			outDir,
+			close: async () => {
+				await new Promise((done) => server.httpServer.close(done));
+				await rm(outDir, { recursive: true, force: true });
+			},
+		};
+	},
+};
+
+describe.each(Object.keys(servers))("page on %s server", (mode) => {
+	let site;
+	let browser;
+	let page;
+	const pageErrors = [];
+
+	beforeAll(async () => {
+		site = await servers[mode]();
+		browser = await chromium.launch();
+		page = await browser.newPage();
+		page.on("pageerror", (error) => pageErrors.push(error.message));
+		await page.goto(site.url);
 	});
-	await server.listen();
-	browser = await chromium.launch();
-	page = await browser.newPage();
-	page.on("pageerror", (error) => pageErrors.push(error.message));
-	await page.goto(server.resolvedUrls.local[0]);
-});
 
-afterAll(async () => {
-	await browser?.close();
-	await server?.close();
-});
+	afterAll(async () => {
+		await browser?.close();
+		await site?.close();
+	});
 
-describe("static reference page", () => {
 	test("runs app.js without errors", () => {
 		expect(pageErrors).toEqual([]);
 	});
@@ -66,6 +93,19 @@ describe("static reference page", () => {
 		await page.waitForFunction(
 			() => document.querySelector("#counter").textContent === "07 / 07",
 		);
+	});
+
+	test.runIf(mode === "build")("ships the root files", async () => {
+		for (const file of [
+			"robots.txt",
+			"sitemap.xml",
+			"llms.txt",
+			"manifest.json",
+		]) {
+			expect(
+				(await readFile(join(site.outDir, file), "utf8")).length,
+			).toBeGreaterThan(0);
+		}
 	});
 
 	// TODO: media lives in the HF bucket Sarverott/mediacontainer; the source
