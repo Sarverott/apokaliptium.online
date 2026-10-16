@@ -1,20 +1,4 @@
-# Project scripts
-
-## Changelog catalogue
-
-```sh
-task changelog
-task changelog -- --check
-npm test -- tests/changelog.test.js
-```
-
-`changelog.mjs` uses Node's standard library and Git to write the catalogue in
-`docs/changelog/`. `--repo`, `--branch` and `--out` select the repository, local
-branch and output directory; they never change branches or fetch remote data.
-`--check` reports stale output without writing. Timestamp, merge, filename and
-ownership rules are documented in [the documentation guide](../docs/README.md).
-
-## Media procedures
+# Media procedures
 
 Destination: https://huggingface.co/buckets/Sarverott/mediacontainer
 

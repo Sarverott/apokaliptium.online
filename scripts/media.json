@@ -1,47 +1,47 @@
 {
-	"bucket": "Sarverott/mediacontainer",
-	"files": [
-		{
-			"name": "apokryf.webp",
-			"bytes": 72262,
-			"sha256": "00ccee90df6dccffc21e7caaf4bd468aaccca42f00d3e07f6e286c577cdca0c8",
-			"key": "apokryf.webp"
-		},
-		{
-			"name": "choir.webp",
-			"bytes": 87482,
-			"sha256": "083ac6d7a7d0abaae359d2014f8f7da91931692a5315db03b02ae373ea25b84a",
-			"key": "choir.webp"
-		},
-		{
-			"name": "future.webp",
-			"bytes": 198622,
-			"sha256": "ea6a19cbb658d510f9bdf1104430af130c5002f9f7fc23b59d7c8e70e94e2210",
-			"key": "future.webp"
-		},
-		{
-			"name": "hero.webp",
-			"bytes": 181552,
-			"sha256": "29e44d1f57420a498075ad0865169c04dbffbf1b490da1048d80cb87a835e641",
-			"key": "hero.webp"
-		},
-		{
-			"name": "network.webp",
-			"bytes": 98412,
-			"sha256": "a66d248196dd8eefb526ec512a4fce20c648dde6017de024c7db445f8a2baf0d",
-			"key": "network.webp"
-		},
-		{
-			"name": "radio.webp",
-			"bytes": 43744,
-			"sha256": "b724a5cdb97d151991fd892c32d4bde4731ef157c8293f417a4f368d2f4ed510",
-			"key": "radio.webp"
-		},
-		{
-			"name": "redscope.webp",
-			"bytes": 47540,
-			"sha256": "fe0fd6fbc23a55a5a91df55c5b2d61ceb530c512f9d03bbfced3452a4da37908",
-			"key": "redscope.webp"
-		}
-	]
+  "bucket": "Sarverott/mediacontainer",
+  "files": [
+    {
+      "name": "apokryf.webp",
+      "bytes": 72262,
+      "sha256": "00ccee90df6dccffc21e7caaf4bd468aaccca42f00d3e07f6e286c577cdca0c8",
+      "key": "apokryf.webp"
+    },
+    {
+      "name": "choir.webp",
+      "bytes": 87482,
+      "sha256": "083ac6d7a7d0abaae359d2014f8f7da91931692a5315db03b02ae373ea25b84a",
+      "key": "choir.webp"
+    },
+    {
+      "name": "future.webp",
+      "bytes": 198622,
+      "sha256": "ea6a19cbb658d510f9bdf1104430af130c5002f9f7fc23b59d7c8e70e94e2210",
+      "key": "future.webp"
+    },
+    {
+      "name": "hero.webp",
+      "bytes": 181552,
+      "sha256": "29e44d1f57420a498075ad0865169c04dbffbf1b490da1048d80cb87a835e641",
+      "key": "hero.webp"
+    },
+    {
+      "name": "network.webp",
+      "bytes": 98412,
+      "sha256": "a66d248196dd8eefb526ec512a4fce20c648dde6017de024c7db445f8a2baf0d",
+      "key": "network.webp"
+    },
+    {
+      "name": "radio.webp",
+      "bytes": 43744,
+      "sha256": "b724a5cdb97d151991fd892c32d4bde4731ef157c8293f417a4f368d2f4ed510",
+      "key": "radio.webp"
+    },
+    {
+      "name": "redscope.webp",
+      "bytes": 47540,
+      "sha256": "fe0fd6fbc23a55a5a91df55c5b2d61ceb530c512f9d03bbfced3452a4da37908",
+      "key": "redscope.webp"
+    }
+  ]
 }

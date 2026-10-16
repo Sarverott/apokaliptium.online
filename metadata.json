@@ -1,0 +1,6 @@
+{
+	"name": "Apokaliptium — Wspólna przyszłość",
+	"description": "Od otwartej wiedzy do cywilizacji typu III. Filmowa podróż przez wizję Apokaliptium.",
+	"permissions": [],
+	"capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

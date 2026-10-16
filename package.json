@@ -18,13 +18,13 @@
   "author": "Sett Sarverott",
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
+    "dev": "astro dev --host 0.0.0.0 --port 3000",
     "build": "astro build",
-    "preview": "astro preview",
-    "check": "node --check scripts/hf-read.mjs && node --check scripts/inspect.mjs && node --check scripts/changelog.mjs",
+    "preview": "astro preview --host 0.0.0.0 --port 3000",
+    "check": "node --check scripts/hf-read.mjs && node --check scripts/inspect.mjs",
     "lint": "biome check",
     "test": "vitest run",
-    "prepare": "husky",
+    "prepare": "husky || true",
     "audit": "npm audit"
   },
   "dependencies": {

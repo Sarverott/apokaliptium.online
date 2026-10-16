@@ -1,11 +1,6 @@
 const key = process.argv[2];
 
-if (
-	!key ||
-	key
-		.split("/")
-		.some((segment) => !segment || segment === "." || segment === "..")
-) {
+if (!key || key.split("/").some((segment) => !segment || segment === "." || segment === "..")) {
 	console.error("Usage: node scripts/hf-read.mjs <bucket-object-key>");
 	process.exitCode = 2;
 } else {
