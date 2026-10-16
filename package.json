@@ -21,7 +21,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "node --check scripts/hf-read.mjs && node --check scripts/inspect.mjs",
+    "check": "node --check scripts/hf-read.mjs && node --check scripts/inspect.mjs && node --check scripts/changelog.mjs",
     "lint": "biome check",
     "test": "vitest run",
     "prepare": "husky",

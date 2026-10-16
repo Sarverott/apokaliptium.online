@@ -23,6 +23,11 @@ tasks:
       - python3 -c 'import ast, pathlib; [ast.parse(path.read_text(), filename=str(path)) for path in pathlib.Path("scripts").glob("*.py")]'
       - python3 -c 'import json, pathlib, tomllib; json.loads(pathlib.Path("package.json").read_text()); json.loads(pathlib.Path("scripts/media.json").read_text()); tomllib.loads(pathlib.Path("pyproject.toml").read_text())'
 
+  changelog:
+    desc: Catalogue committed history into docs/changelog (e.g. task changelog -- --check).
+    cmds:
+      - node scripts/changelog.mjs {{.CLI_ARGS}}
+
   dev:
     desc: Run the Astro development server on localhost:4321.
     cmds:

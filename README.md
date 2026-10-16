@@ -8,6 +8,8 @@
 - `task check` checks syntax and configuration; it is not a browser test suite.
 - `task dev` runs the Astro dev server; `task test` runs Vitest with Playwright
   browser checks; `task lint` runs Biome.
+- `task changelog` regenerates the [commit catalogue](docs/changelog/index.md);
+  `task changelog -- --check` checks its freshness without changing files.
 - `task media:verify` downloads the uploaded WebP files anonymously and checks
   their sizes and hashes without frontend packages or credentials.
 - [Media procedures](scripts/README.md) cover upload and public verification.

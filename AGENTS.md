@@ -50,6 +50,9 @@ media bucket through `media()` in `src/lib/media.js` (base URL in
   `llms.txt`, `manifest.json`; `public/assets/.map.json` is Sett's placeholder
   for external media mapping.
 - `scripts/`: media transfer and anonymous reading tools, documented there.
+- `scripts/changelog.mjs`: offline Git catalogue generator; `task changelog`
+  writes `docs/changelog/`, and `task changelog -- --check` checks freshness.
+  Conventions and protection of handwritten files are in `docs/README.md`.
 - `pyproject.toml`: script dependencies; this is not a Python application.
 - `vitest.config.js`, `astro.config.mjs`, `tsconfig.json`, `biome.json`:
   tool configs; `tests/`: Vitest suites driving Playwright against the dev
