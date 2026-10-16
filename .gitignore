@@ -8,3 +8,7 @@ __pycache__/
 
 dist/
 .astro/
+
+# crawlee default storage, test artifacts
+storage/
+test-results/

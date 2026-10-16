@@ -18,6 +18,26 @@ tasks:
       - python3 -c 'import ast, pathlib; [ast.parse(path.read_text(), filename=str(path)) for path in pathlib.Path("scripts").glob("*.py")]'
       - python3 -c 'import json, pathlib, tomllib; json.loads(pathlib.Path("package.json").read_text()); json.loads(pathlib.Path("scripts/media.json").read_text()); tomllib.loads(pathlib.Path("pyproject.toml").read_text())'
 
+  dev:
+    desc: Run the Vite development server for src/ on localhost:5173.
+    cmds:
+      - npm run dev
+
+  test:
+    desc: Run Vitest, including the Playwright browser checks of src/.
+    cmds:
+      - npm test
+
+  lint:
+    desc: Lint and check formatting with Biome; nothing gets changed.
+    cmds:
+      - npm run lint
+
+  inspect:
+    desc: Crawl a running page with Crawlee and Playwright (default the dev server).
+    cmds:
+      - node scripts/inspect.mjs {{.CLI_ARGS}}
+
   serve:
     desc: Serve the existing static site on localhost:8000.
     cmds:

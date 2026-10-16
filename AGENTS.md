@@ -10,9 +10,9 @@ Cleanup and continuity first. Sett explicitly postponed Astro on 2026-10-16.
 Sett consolidated static source and recycled React components under `src/`
 in `b11c338`, and removed the old draft and local media directories.
 The component migration and style-splitting notes remain future work.
-TypeScript, Astro, React, Vue, animejs, threejs, xterm and the other planned
-frontend dependencies are not installed. Do not assume a runnable framework
-app or install that stack while the task is media verification.
+Sett installed the planned frontend packages in `39ded07`; Astro has a config
+but no pages, and its React/Vue integrations and TypeScript are not installed.
+Vite serves `src/` as the working dev server until the migration starts.
 
 ## Session rhythm
 
@@ -44,6 +44,8 @@ app or install that stack while the task is media verification.
 - `public/assets/.map.json`: Sett's placeholder for external media mapping.
 - `scripts/`: media transfer and anonymous reading tools, documented there.
 - `pyproject.toml`: script dependencies; this is not a Python application.
+- `vite.config.js`, `vitest.config.js`, `astro.config.mjs`, `biome.json`:
+  tool configs; `tests/`: Vitest suites driving Playwright against `src/`.
 - `docs/devlog/`: work records; `docs/.agents/`: letters written by agents.
 
 ## Media and checks
@@ -57,8 +59,11 @@ These use Node/Python standard libraries and need no frontend dependencies.
 Upload/plan tasks require local originals, no longer present in this checkout.
 Do not re-upload, rename objects or put credentials in browser code unasked.
 
-`task check` checks syntax and parses configuration. `task serve` serves the
-repository root; it is not a configured frontend development server. Source
+`task dev` runs Vite on `src/`. `task test` runs Vitest with Playwright
+browser checks. `task lint` runs Biome without changing files. `task inspect`
+crawls a page with Crawlee (default the dev server); sandboxed DNS may need
+network access. `task check` checks syntax and parses configuration.
+`task serve` serves the repository root; use `task dev` for `src/`. Source
 still references removed local media paths; frontend integration is pending.
 Use a browser when changing behaviour. `task recon`
 runs gitrecon without saving to its datasets; override `GITRECON_BIN` when it
