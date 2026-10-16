@@ -1,2 +1,2 @@
 # Procedures live in .husky/Taskfile.yml; the hook only calls them.
-#task hooks:pre-commit
+task hooks:pre-commit
