@@ -85,5 +85,6 @@ work is offered to Joker. Root `README.md` remains the public guide.
 `docs/.agents/` is agent-authored writing for oneself or another agent; humans
 have read-only access by agreement. Do not chmod or publish that area.
 Deploy only site files and media, never the whole working directory. GitHub
-Pages currently builds `master` at `/` with Jekyll, so the repository itself is
-served; Sett wants the build published from a separate branch instead.
+Pages deploys from GitHub Actions: `.github/workflows/public-www.yml` builds
+`dist/`, commits it to the `public-www` branch as a release record, and
+deploys the same files as a Pages artifact.

@@ -1,7 +1,6 @@
-# Builds the site with Vite and publishes dist/ as a commit on the
-# `public-www` branch; GitHub Pages serves that branch (deploy from branch).
-# Each release is a new commit on top of the previous one, so the branch keeps
-# a history of releases.
+# Builds the site with Astro and deploys dist/ to GitHub Pages (Pages source:
+# GitHub Actions). Each build is also committed to the `public-www` branch on
+# top of the previous one, so that branch keeps a history of releases.
 # NOTE: this should be lounched from origin side
 name: Publish public-www
 
@@ -11,7 +10,7 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# Pushing the public-www branch needs write access to repository contents.
+# contents: push public-www; pages, id-token: deploy to GitHub Pages.
 permissions:
   contents: write
   pages: write
@@ -26,6 +25,9 @@ concurrency:
 jobs:
   publish:
     if: github.repository == 'apokaliptium/apokaliptium.online'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -67,13 +69,15 @@ jobs:
             echo "dist/ matches the last release; nothing to publish."
             exit 0
           fi
-          git commit -m "Wellcome, wellcome, wellcome! looks like we have next release here... UNIXUSAT=${UNIXUSAT} we are currently."
+          # --no-verify: npm ci installs the husky hooks, which guard source
+          # commits; this commit holds only built files.
+          git commit --no-verify -m "Wellcome, wellcome, wellcome! looks like we have next release here... UNIXUSAT=${UNIXUSAT} we are currently."
           git push origin HEAD:public-www
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
+          # Upload the built site
           path: './dist'
       - name: Deploy to GitHub Pages
         id: deployment
